@@ -1,0 +1,93 @@
+def add_time(start, duration, day=None):
+    
+    # i think re would help here by filtering everything not a colon but 
+    # I can't import
+
+    # convert start time to 24H:
+    start = start.split(':')
+    
+    if start[1][-2] == 'P' and int(start[0]) == 12: #12 PM
+        start_hour = int(start[0])
+    elif start[1][-2] == 'P': # PM
+        start_hour = 12 + int(start[0])
+    elif start[1][-2] == 'A' and start[0] == '12': # 12AM
+        start_hour = 0
+    else: # AM
+        start_hour = int(start[0])
+
+    start_minute = int(start[1][:2])
+    
+
+    # calculate new hour
+    duration = duration.split(':')
+
+    add_hour = int(duration[0])
+    add_minute = int(duration[1])
+
+    new_hour = start_hour + add_hour
+    new_minute = start_minute + add_minute
+
+    # add elapsed hour
+    if new_minute >= 60: 
+        new_minute -= 60
+        new_hour += 1
+
+    # make sure minutes have two digits
+    if len(str(new_minute)) < 2: 
+        minute_str = '0'
+        new_minute = minute_str + str(new_minute)
+
+    # calculate days elapsed
+    days_elapsed = new_hour // 24
+
+    # calculate hours remaining after subtracting days elapsed
+    new_hour -= (days_elapsed*24)
+    
+
+    # AM/PM calculation:
+    if new_hour > 12:
+        new_hour -= 12
+        tod = 'PM'
+    elif new_hour == 12:
+        tod = 'PM'
+    elif new_hour == 0:
+        tod = 'AM'
+        new_hour = 12
+    else:
+        tod = 'AM'
+    
+    # printout without weekdays
+    if not day:
+        if days_elapsed == 0:
+            new_time = f'{new_hour}:{new_minute} {tod}'
+        elif days_elapsed == 1:
+            new_time = f'{new_hour}:{new_minute} {tod} (next day)'
+        else:
+            new_time = f'{new_hour}:{new_minute} {tod} ({days_elapsed} days later)'
+    else:
+        day = day.lower()
+        weekdays = {
+            'sunday': 1,
+            'monday': 2,
+            'tuesday': 3,
+            'wednesday': 4,
+            'thursday': 5,
+            'friday': 6,
+            'saturday':7
+        }
+        # eg start on tuesday, 15 days elapsed:
+        # 3 + 15 = 18, 18 % 7 = 4, 4 = wednesday
+        start_day = weekdays[day]
+        weekday_digit = (start_day + days_elapsed) % 7
+        new_day = list(weekdays.keys())[list(weekdays.values()).index(weekday_digit)].capitalize()
+
+        if days_elapsed == 0:
+            new_time = f'{new_hour}:{new_minute} {tod}, {new_day}'
+        elif days_elapsed == 1:
+            new_time = f'{new_hour}:{new_minute} {tod}, {new_day} (next day)'
+        else:
+            new_time = f'{new_hour}:{new_minute} {tod}, {new_day} ({days_elapsed} days later)'
+
+    return new_time
+
+print(add_time('11:59 PM', '24:05', 'Wednesday'))
